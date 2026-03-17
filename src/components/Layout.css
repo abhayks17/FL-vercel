@@ -198,8 +198,48 @@
   inset: 0;
   z-index: 10;
   pointer-events: none;
-  border: 2px solid rgba(34, 211, 238, 0.3);
+  /* border removed, using corners instead */
   border-radius: 1rem;
+}
+
+.scanner-corners {
+  position: absolute;
+  inset: 20px; /* offset from the edge */
+}
+
+.corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 4px solid var(--accent-cyan);
+}
+
+.corner-top-left {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner-top-right {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+}
+
+.corner-bottom-left {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+}
+
+.corner-bottom-right {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
 }
 
 .scanner-line {
