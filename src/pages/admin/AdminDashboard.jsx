@@ -550,7 +550,7 @@ const AdminDashboard = () => {
                     </button>
                     <button
                       type="button"
-                      className="btn-primary"
+                      className="btn-primary btn-scan-another"
                       onClick={resetScan}
                       style={{ marginTop: "8px", width: "100%", padding: "0.5rem" }}
                     >

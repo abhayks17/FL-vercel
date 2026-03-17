@@ -118,4 +118,20 @@
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.btn-scan-another {
+  background: white !important;
+  color: black !important;
+  border: 1px solid var(--border-glass) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: var(--transition-smooth);
+}
+
+.btn-scan-another:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #f9fafb !important;
 }

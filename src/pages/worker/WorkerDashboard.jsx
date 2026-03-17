@@ -244,7 +244,7 @@ const WorkerDashboard = () => {
                   <button
                     type="button"
                     onClick={resetScan}
-                    className="btn-primary"
+                    className="btn-primary btn-scan-another"
                     style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
                   >
                     <RefreshCcw size={16} />
