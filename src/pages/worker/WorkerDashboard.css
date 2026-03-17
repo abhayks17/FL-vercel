@@ -119,6 +119,20 @@
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   position: relative;
+  background: #000;
+}
+
+#qr-reader {
+  width: 100% !important;
+  border: none !important;
+  overflow: hidden;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+  object-fit: cover;
 }
 
 .btn-scan-another {

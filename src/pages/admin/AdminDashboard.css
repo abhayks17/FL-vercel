@@ -398,3 +398,49 @@
     padding: 1.5rem;
   }
 }
+
+/* --- Added Responsive Scanner Styles --- */
+.qr-scanner-container {
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+  background: #000;
+}
+
+#qr-reader {
+  width: 100% !important;
+  border: none !important;
+  overflow: hidden;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+  object-fit: cover;
+}
+
+.btn-scan-another {
+  background: white !important;
+  color: black !important;
+  border: 1px solid var(--border-glass) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: var(--transition-smooth);
+}
+
+.btn-scan-another:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #f9fafb !important;
+}
+
+@media (max-width: 600px) {
+  .qr-scanner-container {
+    width: 100%;
+    border-radius: 0.75rem;
+  }
+}
