@@ -1,0 +1,400 @@
+.admin-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.console-label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: var(--transition-smooth);
+}
+
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  #print-qr,
+  #print-qr * {
+    visibility: visible;
+  }
+
+  #print-qr {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+}
+
+.sidebar-btn.active {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sidebar-btn:not(.active) {
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.sidebar-btn:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-title {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-glass);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.page-info {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.audit-table th {
+  padding: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.audit-table td {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.status-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-add {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.status-take {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.message-box {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  border: 1px solid currentColor;
+}
+
+.msg-success {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.msg-error {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 450px;
+  padding: 2rem;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition-smooth);
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Reports Tab – B&W High Contrast Styles
+   ============================================ */
+
+.reports-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.reports-heading {
+  border-bottom: 2px solid #000;
+  padding-bottom: 1rem;
+}
+
+.reports-heading h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reports-heading p {
+  color: #666;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.reports-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  background: #fff;
+  border: 3px solid #000;
+  padding: 1.5rem;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.reports-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.report-card {
+  background: #fff;
+  border: 3px solid #000;
+  padding: 2rem;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.report-card-icon {
+  background: #000;
+  color: #fff;
+  padding: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-card-title {
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+}
+
+.report-card-subtitle {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.btn-report {
+  width: 100%;
+  padding: 0.875rem;
+  background: #000;
+  color: #fff;
+  border: none;
+  font-weight: 900;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.btn-report:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.btn-report:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reports-error {
+  background: #fff;
+  border: 3px solid #dc2626;
+  color: #dc2626;
+  padding: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ============================================
+   Admin Dashboard – Mobile Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .inventory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: span 1;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .audit-table {
+    min-width: 560px;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .reports-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 1.2rem;
+  }
+
+  .btn-primary {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+}

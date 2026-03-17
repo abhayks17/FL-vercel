@@ -1,0 +1,170 @@
+/* ============================================
+   Layout.css – App Shell Styles
+   ============================================ */
+
+.layout-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+/* ---- Navbar ---- */
+.layout-navbar {
+  margin: 1rem;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 1rem;
+  border: 1px solid var(--border-glass);
+  z-index: 50;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar-logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+}
+
+.navbar-role-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 0.5rem;
+}
+
+.navbar-role-badge.admin {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--accent-amber);
+}
+
+.navbar-role-badge.worker {
+  background: rgba(34, 211, 238, 0.1);
+  color: var(--accent-cyan);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navbar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.navbar-user-info span {
+  font-size: 0.9rem;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition-smooth);
+  font-size: 0.9rem;
+}
+
+.btn-logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Mobile menu toggle - hidden on desktop */
+.mobile-sidebar-toggle {
+  display: none;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-glass);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+/* ---- Main body wrapper ---- */
+.layout-body {
+  display: flex;
+  flex: 1;
+  padding: 0 1rem 1rem 1rem;
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---- Sidebar ---- */
+.layout-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: fit-content;
+  border: 1px solid var(--border-glass);
+  border-radius: 1rem;
+}
+
+/* ---- Main Content ---- */
+.layout-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================
+   Mobile Responsive (≤ 992px)
+   ============================================ */
+@media (max-width: 992px) {
+  .layout-body {
+    flex-direction: column;
+  }
+
+  .layout-sidebar {
+    width: 100%;
+    display: none; /* hidden by default on mobile */
+  }
+
+  .layout-sidebar.open {
+    display: flex;
+  }
+
+  .mobile-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .layout-navbar {
+    margin: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar-user-info {
+    display: none; /* save space on very small screens */
+  }
+
+  .navbar-logo {
+    font-size: 1rem;
+  }
+}

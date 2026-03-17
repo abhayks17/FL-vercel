@@ -1,0 +1,85 @@
+/* ============================================
+   WorkerDashboard.css – Worker View Styles
+   ============================================ */
+
+.worker-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.worker-card {
+  padding: 2.5rem;
+}
+
+.worker-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.worker-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.worker-item-preview {
+  background: rgba(34, 211, 238, 0.05);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px dashed var(--border-glass);
+  margin-top: 0.5rem;
+}
+
+.worker-item-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.worker-item-detail {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.worker-item-quantity {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.worker-submit-btn {
+  width: 100%;
+  padding: 1rem;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* ============================================
+   Mobile Responsive (≤ 600px)
+   ============================================ */
+@media (max-width: 600px) {
+  .worker-card {
+    padding: 1.5rem;
+  }
+
+  .worker-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .worker-submit-btn {
+    font-size: 1rem;
+    padding: 0.875rem;
+  }
+
+  .worker-item-preview-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-primary {
+    font-size: 0.95rem;
+  }
+}
