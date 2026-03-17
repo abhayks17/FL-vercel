@@ -5,30 +5,34 @@ const QRScanner = ({ onScan }) => {
   const scannerRef = useRef(null);
   const fileInputRef = useRef(null);
   const isScanningRef = useRef(false);
+  const busyRef = useRef(false);
   const [error, setError] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isCameraEnabled, setIsCameraEnabled] = useState(true);
 
-  // Initialize/Update Live Camera
+  // Centralized Lifecycle Management
   useEffect(() => {
     let mounted = true;
     
-    const initScanner = async () => {
-      // Clear previous error if we're trying to start
-      if (isCameraEnabled) setError(null);
-      
-      // Small delay to ensure DOM element exists
-      await new Promise(resolve => setTimeout(resolve, 150));
-      
-      if (!mounted || !isCameraEnabled) return;
+    const startScanner = async () => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      setError(null);
 
-      const element = document.getElementById("qr-reader");
-      if (!element) return;
+      // Ensure DOM element is ready
+      await new Promise(resolve => setTimeout(resolve, 200));
+      if (!mounted || !isCameraEnabled) {
+        busyRef.current = false;
+        return;
+      }
 
       try {
-        const scanner = new Html5Qrcode("qr-reader");
-        scannerRef.current = scanner;
+        // Create new instance if needed
+        if (!scannerRef.current) {
+          scannerRef.current = new Html5Qrcode("qr-reader");
+        }
 
+        const scanner = scannerRef.current;
         await scanner.start(
           { facingMode: "environment" },
           {
@@ -41,74 +45,79 @@ const QRScanner = ({ onScan }) => {
               onScan(decodedText);
             }
           },
-          () => {} // Ignored
+          () => {} // Frame ignored
         );
+
         if (mounted) setIsCameraActive(true);
       } catch (err) {
         if (mounted) {
-          console.error("Scanner failed:", err);
-          const errorMsg = err?.message || String(err);
-          if (errorMsg.includes("NotFoundError")) {
-            setError("Camera not found. Use image upload below.");
-          } else if (errorMsg.includes("NotAllowedError")) {
-            setError("Camera permission denied.");
-          } else {
-            setError("Camera failed to start.");
-          }
+          console.error("Scanner start error:", err);
+          setError("Failed to access camera. Please check permissions or try image upload.");
           setIsCameraActive(false);
         }
+      } finally {
+        busyRef.current = false;
+      }
+    };
+
+    const stopScanner = async () => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+
+      try {
+        if (scannerRef.current) {
+          const scanner = scannerRef.current;
+          if (scanner.isScanning) {
+            await scanner.stop();
+          }
+          // Always clear to be safe and release tracks
+          await scanner.clear();
+          scannerRef.current = null;
+        }
+      } catch (err) {
+        console.warn("Scanner stop error:", err);
+      } finally {
+        if (mounted) setIsCameraActive(false);
+        busyRef.current = false;
       }
     };
 
     if (isCameraEnabled) {
-      initScanner();
+      startScanner();
     } else {
-      // Stop scanning if disabled
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop()
-          .then(() => {
-            if (mounted) setIsCameraActive(false);
-          })
-          .catch(err => console.warn("Cleanup stop:", err));
-      }
+      stopScanner();
     }
 
     return () => {
       mounted = false;
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop().catch(() => {});
+      if (scannerRef.current) {
+        const scanner = scannerRef.current;
+        if (scanner.isScanning) {
+          scanner.stop().then(() => scanner.clear()).catch(() => {});
+        } else {
+          try { scanner.clear(); } catch(e) {}
+        }
       }
     };
-  }, [onScan, isCameraEnabled]);
+  }, [isCameraEnabled, onScan]);
 
   const handleFileScan = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Reset scanner state for fresh scan
+    // Reset flag for new scan result
     isScanningRef.current = false;
 
-    // Create a temporary scanner for file if the live one isn't active/matching
-    const fileScanner = new Html5Qrcode("qr-reader", { verbose: false });
-    
+    // Use a fresh instance for file scanning to avoid DOM conflicts
+    const tempScanner = new Html5Qrcode("qr-reader", { verbose: false });
     try {
-      const decodedText = await fileScanner.scanFile(file, true);
+      const decodedText = await tempScanner.scanFile(file, true);
       onScan(decodedText);
     } catch (err) {
       console.error("File scan failed:", err);
-      alert("No QR code found in this image. Try another.");
+      alert("No QR code found. Please ensure the image is clear and well-lit.");
     } finally {
-      // Clean up the temporary scanner instance if it was just for file
-      try { fileScanner.clear(); } catch(e) {}
-    }
-  };
-
-  const toggleCamera = () => {
-    setIsCameraEnabled(!isCameraEnabled);
-    if (isCameraEnabled && scannerRef.current && scannerRef.current.isScanning) {
-      scannerRef.current.stop()
-        .then(() => setIsCameraActive(false))
-        .catch(err => console.warn("Toggle stop failed:", err));
+      try { tempScanner.clear(); } catch(e) {}
     }
   };
 
@@ -138,7 +147,7 @@ const QRScanner = ({ onScan }) => {
         </div>
 
         {/* Messaging / Error States */}
-        {(!isCameraEnabled || error) && (
+        {(!isCameraActive || error) && (
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -154,15 +163,27 @@ const QRScanner = ({ onScan }) => {
           }}>
             {!isCameraEnabled ? (
               <div style={{ color: '#9ca3af' }}>
-                <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem' }}>Camera is Off</p>
-                <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>Use Image Upload or Turn Camera On</p>
+                <div style={{ 
+                  width: '48px', height: '48px', 
+                  borderRadius: '50%', background: 'rgba(255,255,255,0.05)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 1rem'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 1l22 22M21 21H3a2 2 0 01-2-2V8a2 2 0 012-2h3m3-3h6l2 3h4a2 2 0 012 2v9.34m-7.72-2.06a4 4 0 11-5.56-5.56" />
+                  </svg>
+                </div>
+                <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.4rem', color: '#fff' }}>Camera is Off</p>
+                <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>Turn on to start live scanning</p>
               </div>
             ) : error ? (
               <div style={{ color: '#ef4444' }}>
                 <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.5rem' }}>Scanner Error</p>
-                <p style={{ fontSize: '0.9rem' }}>{error}</p>
+                <p style={{ fontSize: '0.85rem' }}>{error}</p>
               </div>
-            ) : null}
+            ) : (
+              <div style={{ color: '#fff', fontSize: '0.9rem', opacity: 0.6 }}>Initializing camera...</div>
+            )}
           </div>
         )}
 
@@ -170,7 +191,7 @@ const QRScanner = ({ onScan }) => {
         <div id="qr-reader" style={{ 
           width: '100%', 
           border: 'none',
-          visibility: isCameraActive ? 'visible' : 'hidden' 
+          display: isCameraActive ? 'block' : 'none' 
         }} />
       </div>
 
@@ -179,19 +200,32 @@ const QRScanner = ({ onScan }) => {
         
         {/* Toggle Button */}
         <button 
-          onClick={toggleCamera}
+          onClick={() => setIsCameraEnabled(!isCameraEnabled)}
           style={{
             background: isCameraEnabled ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
             color: isCameraEnabled ? '#ef4444' : '#22c55e',
             border: `1px solid ${isCameraEnabled ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'}`,
-            padding: '0.75rem',
-            borderRadius: '0.75rem',
-            fontSize: '0.85rem',
+            padding: '0.85rem',
+            borderRadius: '1rem',
+            fontSize: '0.9rem',
             fontWeight: '600',
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.6rem'
           }}
         >
+          {isCameraEnabled ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+          )}
           {isCameraEnabled ? "Turn Off Camera" : "Turn On Camera"}
         </button>
 
@@ -210,15 +244,15 @@ const QRScanner = ({ onScan }) => {
             background: '#fff',
             color: '#000',
             border: 'none',
-            padding: '0.75rem',
-            borderRadius: '0.75rem',
+            padding: '0.85rem',
+            borderRadius: '1rem',
             fontSize: '0.9rem',
             fontWeight: '700',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.5rem',
+            gap: '0.6rem',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }}
         >
