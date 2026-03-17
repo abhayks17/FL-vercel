@@ -20,7 +20,11 @@ const QRScanner = ({ onScan }) => {
     return () => scanner.clear().catch(() => {});
   }, []);
 
-  return <div id="qr-reader" style={{ width: "300px" }} />;
+  return (
+    <div className="qr-scanner-container">
+      <div id="qr-reader" />
+    </div>
+  );
 };
 
 export default QRScanner;

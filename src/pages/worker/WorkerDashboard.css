@@ -82,4 +82,40 @@
   .btn-primary {
     font-size: 0.95rem;
   }
+
+  .qr-scanner-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: #000;
+    border-radius: 1rem;
+    overflow: hidden;
+    margin: 0 auto;
+  }
+
+  #qr-reader {
+    width: 100% !important;
+    border: none !important;
+  }
+
+  /* Target html5-qrcode's internal layout */
+  #qr-reader__scan_region {
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #qr-reader video {
+    max-width: 100%;
+    height: auto !important;
+  }
+}
+
+.qr-scanner-container {
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
