@@ -16,11 +16,15 @@ import {
   Users,
   Download,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  QrCode,
+  Pencil,
+  Trash2,
+  Box
 } from 'lucide-react';
 import Layout from '../../components/Layout';
 import axios from 'axios';
-import { getLogs, createItemType, getItemTypes, getItems, addStock, getItemByTag, downloadReport as fetchReportFile } from '../../services/api';
+import { getLogs, createItemType, getItemTypes, getItems, addStock, getItemByTag, downloadReport as fetchReportFile, updateItem, deleteItem } from '../../services/api';
 import './AdminDashboard.css';
 import QRGenerator from "../../components/QRGenerator";
 import QRScanner from "../../components/QRScanner";
@@ -42,6 +46,7 @@ const AdminDashboard = () => {
   const [isNewItem, setIsNewItem] = useState(false);
   const [selectedItemData, setSelectedItemData] = useState(null);
   const [stockQty, setStockQty] = useState('');
+  const [manualUom, setManualUom] = useState('Unit');
   const [submitting, setSubmitting] = useState(false);
   const [inventoryMessage, setInventoryMessage] = useState({ text: '', type: '' });
 
@@ -60,6 +65,16 @@ const AdminDashboard = () => {
   const lastScannedItemRef = useRef(null);
   const scannerRef = useRef(null);
   const [scannerKey, setScannerKey] = useState(0);
+  const [allInventory, setAllInventory] = useState([]);
+  const [editingItem, setEditingItem] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    TagId: '',
+    uom: '',
+    itemType: '',
+    totalQuantity: 0
+  });
 
   const fetchData = async () => {
     if (activeView === 'logs') {
@@ -79,6 +94,15 @@ const AdminDashboard = () => {
         setItemTypes(types);
       } catch (error) {
         console.error('ItemTypes fetch failed', error);
+      }
+    } else if (activeView === 'management') {
+      try {
+        const itemsData = await getItems();
+        setAllInventory(itemsData);
+        const types = await getItemTypes();
+        setItemTypes(types);
+      } catch (error) {
+        console.error('Management fetch failed', error);
       }
     }
   };
@@ -242,7 +266,8 @@ const AdminDashboard = () => {
         tagId: tagToSubmit,
         name: isNewItem ? manualItemName.trim() : items.find(i => i._id === selectedItem)?.name,
         itemTypeId: selectedItemType,
-        quantity: parseInt(stockQty)
+        quantity: parseInt(stockQty),
+        uom: isNewItem ? manualUom.trim() : items.find(i => i._id === selectedItem)?.uom
       });
       setInventoryMessage({ text: isNewItem ? 'New item created and stock added!' : 'Stock updated successfully!', type: 'success' });
       setStockQty('');
@@ -298,6 +323,42 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleEditClick = (item) => {
+    setEditingItem(item);
+    setEditFormData({
+      name: item.name,
+      TagId: item.TagId,
+      uom: item.uom || 'Unit',
+      itemType: item.itemType?._id || item.itemType,
+      totalQuantity: item.totalQuantity
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateItem(editingItem._id, editFormData);
+      setShowEditModal(false);
+      const itemsData = await getItems();
+      setAllInventory(itemsData);
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to update item');
+    }
+  };
+
+  const handleDeleteItem = async (id) => {
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      try {
+        await deleteItem(id);
+        const itemsData = await getItems();
+        setAllInventory(itemsData);
+      } catch (error) {
+        alert(error.response?.data?.error || 'Failed to delete item');
+      }
+    }
+  };
+
   const sidebarContent = (
     <>
       <div className="console-label" style={{
@@ -309,11 +370,18 @@ const AdminDashboard = () => {
         paddingLeft: '0.5rem'
       }}>Console</div>
       <button
+        onClick={() => setActiveView('management')}
+        className={`sidebar-btn ${activeView === 'management' ? 'active' : ''}`}
+      >
+        <LayoutGrid size={18} />
+        Management
+      </button>
+      <button
         onClick={() => setActiveView('inventory')}
         className={`sidebar-btn ${activeView === 'inventory' ? 'active' : ''}`}
       >
         <PackagePlus size={18} />
-        Inventory
+        Inward Stock
       </button>
       <button
         onClick={() => setActiveView('logs')}
@@ -335,6 +403,74 @@ const AdminDashboard = () => {
   return (
     <Layout role="admin" sidebarContent={sidebarContent}>
       <div>
+        {activeView === 'management' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card" style={{ padding: '2rem' }}>
+            <div className="dashboard-header">
+              <h2 className="dashboard-title">
+                <Box size={24} color="var(--accent-amber)" />
+                Inventory Management
+              </h2>
+            </div>
+
+            <div className="table-container">
+              <table className="audit-table management-table">
+                <thead>
+                  <tr>
+                    <th>TOOL ID</th>
+                    <th>NAME</th>
+                    <th>DEPARTMENT</th>
+                    <th>UOM</th>
+                    <th>ITEMS LEFT</th>
+                    <th style={{ textAlign: 'right' }}>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allInventory.map(item => (
+                    <tr key={item._id}>
+                      <td style={{ fontWeight: '700' }}>{item.TagId}</td>
+                      <td style={{ fontWeight: '500' }}>{item.name}</td>
+                      <td>{item.itemType?.name || 'N/A'}</td>
+                      <td>{item.uom || 'Unit'}</td>
+                      <td>
+                        <span className={`status-badge ${item.totalQuantity > 10 ? 'status-add' : 'status-low'}`} 
+                              style={{ 
+                                backgroundColor: item.totalQuantity > 10 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(249, 115, 22, 0.1)',
+                                color: item.totalQuantity > 10 ? '#22c55e' : '#f97316',
+                                borderRadius: '20px',
+                                padding: '4px 12px'
+                              }}>
+                          {item.totalQuantity} units
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                          <button onClick={() => downloadQR(item.TagId)} className="btn-icon-sm" title="Download QR">
+                            <QrCode size={16} color="#3b82f6" />
+                            <span style={{ fontSize: '0.7rem', marginLeft: '4px', color: '#3b82f6' }}>QR</span>
+                          </button>
+                          <button onClick={() => handleEditClick(item)} className="btn-icon-sm" title="Edit">
+                            <Pencil size={16} />
+                          </button>
+                          <button onClick={() => handleDeleteItem(item._id)} className="btn-icon-sm" title="Delete">
+                            <Trash2 size={16} color="#ef4444" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Hidden QR for download purposes if needed */}
+            <div style={{ display: 'none' }} className="qr-print-area">
+              {allInventory.map(item => (
+                 <QRGenerator key={item._id} tagId={item.TagId} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {activeView === 'logs' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card" style={{ padding: '2rem' }}>
             <div className="dashboard-header">
@@ -479,6 +615,14 @@ const AdminDashboard = () => {
                       value={manualItemName}
                       onChange={(e) => setManualItemName(e.target.value)}
                       placeholder="Item Name (e.g. M10 Bolt)"
+                      required
+                    />
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={manualUom}
+                      onChange={(e) => setManualUom(e.target.value)}
+                      placeholder="UOM (e.g. Drum, Pail, Unit)"
                       required
                     />
                   </div>
@@ -640,8 +784,8 @@ const AdminDashboard = () => {
                       <FileText size={22} />
                     </span>
                     <div>
-                      <div className="report-card-title">Daily Summary</div>
-                      <div className="report-card-subtitle">Aggregated stock changes per item</div>
+                      <div className="report-card-title">Stock Report</div>
+                      <div className="report-card-subtitle">Day-by-day consumption and closing stock</div>
                     </div>
                   </div>
                   <button
@@ -716,6 +860,85 @@ const AdminDashboard = () => {
                 <button type="submit" className="btn-primary" style={{ justifyContent: 'center' }}>
                   <Save size={18} />
                   Save Category
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal for Edit Item */}
+      <AnimatePresence>
+        {showEditModal && (
+          <div className="modal-overlay">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card modal-content"
+              style={{ maxWidth: '500px' }}
+            >
+              <div className="modal-header">
+                <h3>Edit Item Details</h3>
+                <button onClick={() => setShowEditModal(false)} className="close-btn">
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleEditSubmit} className="modal-form" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label className="input-label">Item Name</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="input-label">Tag ID</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editFormData.TagId}
+                    onChange={(e) => setEditFormData({ ...editFormData, TagId: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="input-label">Category</label>
+                  <select
+                    className="input-field"
+                    value={editFormData.itemType}
+                    onChange={(e) => setEditFormData({ ...editFormData, itemType: e.target.value })}
+                    required
+                  >
+                    {itemTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="input-label">UOM (Unit of Measurement)</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editFormData.uom}
+                    onChange={(e) => setEditFormData({ ...editFormData, uom: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="input-label">Current Stock</label>
+                  <input
+                    type="number"
+                    className="input-field"
+                    value={editFormData.totalQuantity}
+                    onChange={(e) => setEditFormData({ ...editFormData, totalQuantity: parseInt(e.target.value) })}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn-primary" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                  <Save size={18} />
+                  Update Item
                 </button>
               </form>
             </motion.div>

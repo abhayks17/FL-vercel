@@ -238,8 +238,8 @@ const WorkerDashboard = () => {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Current Stock</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>{selectedItemData.totalQuantity} units</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Available</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>{selectedItemData.totalQuantity} {selectedItemData.uom || 'units'}</div>
                   </div>
                   <button
                     type="button"

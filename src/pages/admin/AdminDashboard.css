@@ -444,3 +444,51 @@
     border-radius: 0.75rem;
   }
 }
+
+/* Management Table Styles */
+.management-table {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.management-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.btn-icon-sm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border-glass);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.btn-icon-sm:hover {
+  background: #f9fafb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border-color: #d1d5db;
+}
+
+.status-low {
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+.management-table th {
+  background: #fdfdfd;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.management-table td {
+  vertical-align: middle;
+}

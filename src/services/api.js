@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://fl-backend-vqv6.onrender.com/api";
+const API_BASE_URL = "http://localhost:5000/api"; // Change this to your backend URL
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -51,6 +51,16 @@ export const getItemByTag = async (tagId) => {
 
 export const getItems = async (itemTypeId = '') => {
   const res = await api.get(`/items${itemTypeId ? `?itemType=${itemTypeId}` : ''}`);
+  return res.data;
+};
+
+export const updateItem = async (id, data) => {
+  const res = await api.put(`/items/${id}`, data);
+  return res.data;
+};
+
+export const deleteItem = async (id) => {
+  const res = await api.delete(`/items/${id}`);
   return res.data;
 };
 
