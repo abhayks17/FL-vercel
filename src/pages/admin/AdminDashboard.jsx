@@ -30,7 +30,7 @@ import QRGenerator from "../../components/QRGenerator";
 import QRScanner from "../../components/QRScanner";
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [activeView, setActiveView] = useState('logs');
+  const [activeView, setActiveView] = useState('management');
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
