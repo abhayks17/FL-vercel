@@ -18,8 +18,7 @@ const Layout = ({ children, role, sidebarContent }) => {
       {/* Navbar */}
       <nav className="layout-navbar glass-card">
         <div className="navbar-brand">
-          <Factory color="var(--accent-cyan)" size={24} />
-          <span className="navbar-logo">FactoryLog</span>
+          <img src="/3.png" alt="Logo" className="navbar-logo-img" style={{ height: '32px', objectFit: 'contain' }} />
           <span className={`navbar-role-badge ${role}`}>{role}</span>
         </div>
 

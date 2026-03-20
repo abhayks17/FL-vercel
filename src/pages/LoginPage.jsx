@@ -77,15 +77,11 @@ const LoginPage = () => {
         <div style={{ textAlign: 'center' }}>
           <div style={{
             display: 'inline-flex',
-            padding: '1rem',
-            background: 'rgba(34, 211, 238, 0.1)',
-            borderRadius: '1rem',
             marginBottom: '1rem'
           }}>
-            <Factory size={40} className="text-cyan-400" color="#22d3ee" />
+            <img src="/3.png" alt="Logo" style={{ height: '100px', width: '200px', objectFit: 'contain' }} />
           </div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>FactoryLog</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Industrial Data Interface</p>
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Industrial Data Interface</p>
         </div>
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
