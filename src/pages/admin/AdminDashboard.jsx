@@ -28,6 +28,7 @@ import { getLogs, createItemType, getItemTypes, getItems, addStock, getItemByTag
 import './AdminDashboard.css';
 import QRGenerator from "../../components/QRGenerator";
 import QRScanner from "../../components/QRScanner";
+import QRCode from "qrcode";
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('management');
@@ -179,20 +180,23 @@ const AdminDashboard = () => {
     }
   };
 
-  const downloadQR = (tagId) => {
-    const canvas = document.querySelector(".qr-print-area canvas") || document.querySelector(".inventory-grid canvas");
-    if (!canvas) return;
+ 
+const downloadQR = async (tagId) => {
+  try {
+    const dataUrl = await QRCode.toDataURL(tagId, {
+      width: 300,
+      margin: 2,
+      errorCorrectionLevel: "H",
+    });
 
-    const pngUrl = canvas
-      .toDataURL("image/png")
-      .replace("image/png", "image/octet-stream");
-    let downloadLink = document.createElement("a");
-    downloadLink.href = pngUrl;
-    downloadLink.download = `QR_${tagId}.png`;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  };
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = `QR_${tagId}.png`;
+    link.click();
+  } catch (err) {
+    console.error("QR generation failed:", err);
+  }
+};
   const fetchItems = async () => {
     if (selectedItemType) {
       try {

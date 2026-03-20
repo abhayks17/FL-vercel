@@ -1,15 +1,27 @@
 import React from "react";
 import { QRCodeCanvas } from "qrcode.react";
 
-const QRCodeGenerator = ({ tagId }) => {
+const QRGenerator = ({ tagId }) => {
   if (!tagId) return null;
 
   return (
-    <div style={{ textAlign: "center", marginTop: "1rem" }}>
-      <QRCodeCanvas value={tagId} size={180} />
-      <p style={{ marginTop: "0.5rem" }}>{tagId}</p>
-    </div>
+    <canvas
+      id={`qr-${tagId}`} // 🔥 UNIQUE ID
+      style={{ display: "none" }}
+      ref={(node) => {
+        if (node) {
+          const qr = document.createElement("div");
+        }
+      }}
+    >
+      <QRCodeCanvas
+        value={tagId}
+        size={260}
+        level="H"
+        includeMargin={true}
+      />
+    </canvas>
   );
 };
 
-export default QRCodeGenerator;
+export default QRGenerator;
