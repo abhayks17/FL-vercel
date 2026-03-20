@@ -8,12 +8,9 @@ import './WorkerDashboard.css';
 
 const WorkerDashboard = () => {
   // Inventory State
-  const [itemTypes, setItemTypes] = useState([]);
-  const [items, setItems] = useState([]);
-  const [selectedItemType, setSelectedItemType] = useState('');
-  const [selectedItem, setSelectedItem] = useState('');
   const [selectedItemData, setSelectedItemData] = useState(null);
   const [stockQty, setStockQty] = useState('');
+  const [manualTag, setManualTag] = useState('');
 
   // UI State
   const [loading, setLoading] = useState(false);
@@ -21,107 +18,43 @@ const WorkerDashboard = () => {
   const [scannerKey, setScannerKey] = useState(0);
 
   // Refs for state sync and UI
-  const lastScannedItemRef = useRef(null);
   const scannerRef = useRef(null);
 
-  // Fetch Category List on mount
-  useEffect(() => {
-    const fetchTypes = async () => {
-      try {
-        const types = await getItemTypes();
-        setItemTypes(types);
-      } catch (err) {
-        console.error("Failed to fetch categories", err);
-      }
-    };
-    fetchTypes();
-  }, []);
-
-  // Fetch Items when Category changes
-  const fetchItems = async () => {
-    if (selectedItemType) {
-      try {
-        const fetchedItems = await getItems(selectedItemType);
-
-        // Ensure the scanned item stays in the list even if it wouldn't normally appear
-        const isRecentlyScanned = lastScannedItemRef.current && selectedItem === lastScannedItemRef.current;
-        const existsInFetched = fetchedItems.find(i => i._id === selectedItem);
-
-        if (isRecentlyScanned && !existsInFetched && selectedItemData) {
-          setItems([selectedItemData, ...fetchedItems]);
-        } else {
-          setItems(fetchedItems);
-        }
-
-        // Auto-clear selection if it becomes invalid and wasn't just scanned
-        if (selectedItem && !isRecentlyScanned && !fetchedItems.find(i => i._id === selectedItem)) {
-          setSelectedItem('');
-        }
-
-        // Cleanup ref after sync
-        setTimeout(() => { lastScannedItemRef.current = null; }, 1000);
-
-      } catch (err) {
-        console.error("Failed to fetch items", err);
-      }
-    } else {
-      setItems([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchItems();
-  }, [selectedItemType]);
-
-  // Update Item Data when selection changes
-  useEffect(() => {
-    const item = items.find(i => i._id === selectedItem);
-    setSelectedItemData(item || null);
-  }, [selectedItem, items]);
-
-  const handleScan = async (scannedTag) => {
-    const tagId = scannedTag?.trim();
+  const fetchItemByTag = async (tagId) => {
     if (!tagId) return;
-
-    console.log("Worker Scanning Tag:", tagId);
 
     try {
       const item = await getItemByTag(tagId);
 
-      lastScannedItemRef.current = item._id;
-
-      // Update states
-      const typeId = item.itemType?._id || item.itemType;
-      setSelectedItemType(typeId);
-
-      setItems(prev => {
-        const exists = prev.find(i => i._id === item._id);
-        return exists ? prev : [item, ...prev];
-      });
-
-      setSelectedItem(item._id);
       setSelectedItemData(item);
-      setStockQty(''); // Let worker enter what they took
+      setStockQty('');
+      setMessage({ text: '', type: '' });
+      setManualTag(''); // Clear manual input on success
 
-      // Focus quantity
       setTimeout(() => {
         const qtyInput = document.querySelector('input[placeholder="Quantity taken"]');
         if (qtyInput) qtyInput.focus();
-      }, 250);
+      }, 200);
 
     } catch (err) {
-      console.error("Scan error:", err.response?.data?.error || err.message);
-      setMessage({ text: 'Item not found. Please check with an admin.', type: 'error' });
-      setTimeout(() => setMessage({ text: '', type: '' }), 4000);
+      setSelectedItemData(null);
+      setMessage({ text: 'Item not found', type: 'error' });
     }
   };
 
+  const handleScan = (scannedTag) => {
+    const tagId = scannedTag?.trim();
+    if (!tagId) return;
+
+    console.log("Scanned:", tagId);
+    fetchItemByTag(tagId);
+  };
+
   const resetScan = () => {
-    setSelectedItem('');
     setSelectedItemData(null);
     setStockQty('');
+    setManualTag('');
     setMessage({ text: '', type: '' });
-    lastScannedItemRef.current = null;
     setScannerKey(prev => prev + 1);
 
     setTimeout(() => {
@@ -133,11 +66,11 @@ const WorkerDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedItem || !stockQty) return;
+    if (!selectedItemData || !stockQty) return;
 
     setLoading(true);
     try {
-      const tagId = items.find(i => i._id === selectedItem)?.TagId;
+      const tagId = selectedItemData?.TagId;
       await takeStock({
         tagId,
         quantity: parseInt(stockQty)
@@ -145,7 +78,8 @@ const WorkerDashboard = () => {
 
       setMessage({ text: 'Stock removed successfully!', type: 'success' });
       setStockQty('');
-      fetchItems(); // Refresh counts
+      // Refresh current item data
+      fetchItemByTag(tagId);
 
       setTimeout(() => setMessage({ text: '', type: '' }), 4000);
     } catch (err) {
@@ -178,41 +112,93 @@ const WorkerDashboard = () => {
             <QRScanner key={scannerKey} onScan={handleScan} />
           </div>
 
+          <div className="form-group" style={{ marginBottom: '2.5rem' }}>
+            <label className="input-label">OR Enter Tag ID</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Enter Tag ID manually"
+                value={manualTag}
+                onChange={(e) => setManualTag(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    fetchItemByTag(manualTag.trim());
+                  }
+                }}
+              />
+              <button 
+                type="button"
+                onClick={() => fetchItemByTag(manualTag.trim())}
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'var(--accent-cyan)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '0.4rem',
+                  padding: '0.4rem 0.8rem',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Fetch
+              </button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-            <div className="form-group">
-              <label className="input-label">2. Confirm Category</label>
-              <select
-                className="input-field"
-                value={selectedItemType}
-                onChange={(e) => setSelectedItemType(e.target.value)}
-                required
+            {selectedItemData && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  background: 'rgba(34, 211, 238, 0.03)',
+                  padding: '1.5rem',
+                  borderRadius: '1rem',
+                  border: '1px solid var(--border-glass)',
+                  marginBottom: '1rem'
+                }}
               >
-                <option value="">-- Choose Category --</option>
-                {itemTypes.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-              </select>
-            </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Item Name</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>{selectedItemData.name}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Tag ID</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--accent-cyan)' }}>{selectedItemData.TagId}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Category</div>
+                    <div style={{ fontSize: '1rem' }}>{selectedItemData.itemType?.name || 'Uncategorized'}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Available Stock</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '800' }}>{selectedItemData.totalQuantity} <span style={{fontSize: '0.9rem', fontWeight: '400'}}>{selectedItemData.uom || 'units'}</span></div>
+                  </div>
+                </div>
+                
+                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={resetScan}
+                    className="btn-primary"
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', background: 'rgba(0,0,0,0.05)' }}
+                  >
+                    <RefreshCcw size={16} />
+                    Reset Scan
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
             <div className="form-group">
-              <label className="input-label">3. Confirm Specific Item</label>
-              <select
-                className="input-field"
-                value={selectedItem}
-                onChange={(e) => setSelectedItem(e.target.value)}
-                disabled={!selectedItemType}
-                required
-              >
-                <option value="">-- Choose Item --</option>
-                {items.map(i => (
-                  <option key={i._id} value={i._id}>
-                    {i.name} ({i.TagId}) - Available: {i.totalQuantity}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="input-label">4. Quantity Taken</label>
+              <label className="input-label">Quantity Consumed</label>
               <input
                 type="number"
                 className="input-field"
@@ -221,38 +207,9 @@ const WorkerDashboard = () => {
                 onChange={(e) => setStockQty(e.target.value)}
                 required
                 min="1"
+                disabled={!selectedItemData}
               />
             </div>
-
-            {selectedItemData && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                style={{
-                  background: 'rgba(34, 211, 238, 0.05)',
-                  padding: '1rem',
-                  borderRadius: '0.75rem',
-                  border: '1px dashed var(--border-glass)',
-                  marginTop: '0.5rem'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Available</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>{selectedItemData.totalQuantity} {selectedItemData.uom || 'units'}</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={resetScan}
-                    className="btn-primary btn-scan-another"
-                    style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-                  >
-                    <RefreshCcw size={16} />
-                    Scan Another
-                  </button>
-                </div>
-              </motion.div>
-            )}
 
             <div style={{ marginTop: '1rem' }}>
               {message.text && (
@@ -269,7 +226,7 @@ const WorkerDashboard = () => {
               <button
                 type="submit"
                 className="btn-primary"
-                disabled={loading || !selectedItem}
+                disabled={loading || !selectedItemData}
                 style={{ width: '100%', padding: '1rem', justifyContent: 'center', fontSize: '1.1rem' }}
               >
                 {loading ? 'Processing...' : 'Confirm Consumption'}
