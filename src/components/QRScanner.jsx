@@ -18,11 +18,11 @@ const QRScanner = ({ onScan }) => {
 
         await scanner.start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
+          { fps: 10, qrbox: 550 },
           (decodedText) => {
             onScan(decodedText);
           },
-          () => {}
+          () => { }
         );
 
         isRunningRef.current = true;
