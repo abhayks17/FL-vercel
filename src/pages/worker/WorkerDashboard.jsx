@@ -107,10 +107,17 @@ const WorkerDashboard = () => {
           </div>
 
           {/* Scanner Section */}
-          <div style={{ marginBottom: "2.5rem" }} ref={scannerRef}>
-            <h4 style={{ marginBottom: "1rem", color: 'var(--text-secondary)' }}>1. Scan Component QR</h4>
-            <QRScanner key={scannerKey} onScan={handleScan} />
-          </div>
+          {!selectedItemData && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              style={{ marginBottom: "2.5rem" }} 
+              ref={scannerRef}
+            >
+              <h4 style={{ marginBottom: "1rem", color: 'var(--text-secondary)' }}>1. Scan Component QR</h4>
+              <QRScanner key={scannerKey} onScan={handleScan} />
+            </motion.div>
+          )}
 
           <div className="form-group" style={{ marginBottom: '2.5rem' }}>
             <label className="input-label">OR Enter Tag ID</label>

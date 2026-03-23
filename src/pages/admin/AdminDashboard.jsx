@@ -549,10 +549,17 @@ const downloadQR = async (tagId) => {
             </div>
 
             {/* QR Scanner */}
-            <div style={{ marginBottom: "2rem" }} ref={scannerRef}>
-              <h4 style={{ marginBottom: "0.5rem" }}>Scan Item QR</h4>
-              <QRScanner key={scannerKey} onScan={handleScan} />
-            </div>
+            {!selectedItemData && !isNewItem && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                style={{ marginBottom: "2rem" }} 
+                ref={scannerRef}
+              >
+                <h4 style={{ marginBottom: "0.5rem" }}>Scan Item QR</h4>
+                <QRScanner key={scannerKey} onScan={handleScan} />
+              </motion.div>
+            )}
 
             <form onSubmit={handleStockSubmit} className="inventory-grid">
               <div className="full-width">
