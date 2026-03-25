@@ -5,6 +5,7 @@ const QRScanner = ({ onScan }) => {
   const html5QrCodeRef = useRef(null);
   const isRunningRef = useRef(false);
   const isStartingRef = useRef(false); // 🔥 NEW
+const lastScanRef = useRef(null);
 
   useEffect(() => {
     if (isStartingRef.current || isRunningRef.current) return;
@@ -16,14 +17,16 @@ const QRScanner = ({ onScan }) => {
         const scanner = new Html5Qrcode("qr-reader");
         html5QrCodeRef.current = scanner;
 
-        await scanner.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: 550 },
-          (decodedText) => {
-            onScan(decodedText);
-          },
-          () => { }
-        );
+await scanner.start(
+  { facingMode: "environment" },
+  { fps: 10, qrbox: 550 },
+  (decodedText) => {
+    if (lastScanRef.current === decodedText) return;
+
+    lastScanRef.current = decodedText;
+    onScan(decodedText);
+  }
+);
 
         isRunningRef.current = true;
       } catch (err) {
