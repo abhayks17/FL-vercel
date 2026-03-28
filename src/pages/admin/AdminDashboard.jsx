@@ -37,6 +37,11 @@ const AdminDashboard = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Search and Filter State
+  const [searchName, setSearchName] = useState('');
+  const [searchTag, setSearchTag] = useState('');
+  const [sortQtyAsc, setSortQtyAsc] = useState(false);
+
   // Inventory Management State
   const [itemTypes, setItemTypes] = useState([]);
   const [items, setItems] = useState([]);
@@ -416,6 +421,39 @@ const downloadQR = async (tagId) => {
               </h2>
             </div>
 
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Search by Name..."
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                style={{ flex: 1, minWidth: '200px' }}
+              />
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Search by Tag ID..."
+                value={searchTag}
+                onChange={(e) => setSearchTag(e.target.value)}
+                style={{ flex: 1, minWidth: '200px' }}
+              />
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => setSortQtyAsc(!sortQtyAsc)}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  backgroundColor: sortQtyAsc ? 'var(--accent-amber)' : 'var(--primary-color)'
+                }}
+              >
+                Qty: {sortQtyAsc ? 'Low to High' : 'Default'}
+              </button>
+            </div>
+
             <div className="table-container">
               <table className="audit-table management-table">
                 <thead>
@@ -429,7 +467,13 @@ const downloadQR = async (tagId) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {allInventory.map(item => (
+                  {([...allInventory]
+                    .filter(item => 
+                      (item.name || '').toLowerCase().includes(searchName.toLowerCase()) &&
+                      (item.TagId || '').toLowerCase().includes(searchTag.toLowerCase())
+                    )
+                    .sort((a, b) => sortQtyAsc ? a.totalQuantity - b.totalQuantity : 0)
+                  ).map(item => (
                     <tr key={item._id}>
                       <td style={{ fontWeight: '700' }}>{item.TagId}</td>
                       <td style={{ fontWeight: '500' }}>{item.name}</td>

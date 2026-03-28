@@ -79,7 +79,7 @@ const LoginPage = () => {
             display: 'inline-flex',
             marginBottom: '1rem'
           }}>
-            <img src="/3.png" alt="Logo" style={{ height: '100px', width: '200px', objectFit: 'contain' }} />
+            <img src="./3.png" alt="Logo" style={{ height: '100px', width: '200px', objectFit: 'contain' }} />
           </div>
           <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Industrial Data Interface</p>
         </div>
